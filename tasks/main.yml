@@ -1,0 +1,7 @@
+---
+- include_tasks: install-node-exporter.yml
+  when: node_exporter_enabled
+- include_tasks: configure-ufw.yml
+- include_tasks: configure-journald.yml
+- include_tasks: configure-users.yml
+- include_tasks: configure-polkadot-client.yml

@@ -1,0 +1,79 @@
+---
+- name: install ufw
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: ufw already enabled
+  command: ufw status verbose
+  register: ufw_status_result
+  changed_when: False
+
+- name: open ssh port
+  command: ufw allow 22/tcp
+  when: not ufw_status_result.stdout is search("22/tcp.*ALLOW IN.*Anywhere")
+
+- name: open node_exporter port
+  command: ufw allow {{ node_exporter_port }}/tcp
+  when:
+    - node_exporter_enabled|bool
+    - not ufw_status_result.stdout is search(node_exporter_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open p2p port
+  command: ufw allow {{ p2p_port }}/tcp
+  when:
+    - not ufw_status_result.stdout is search(p2p_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open client prometheus port
+  command: ufw allow {{ prometheus_port }}/tcp
+  when:
+    - not ufw_status_result.stdout is search(prometheus_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open RPC port
+  command: ufw allow {{ api_rpc_port }}/tcp
+  when:
+    - not ufw_status_result.stdout is search(api_rpc_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open WSS port
+  command: ufw allow {{ api_wss_port }}/tcp
+  when:
+    - not ufw_status_result.stdout is search(api_wss_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open health check port
+  command: ufw allow {{ health_check_port }}/tcp
+  when:
+    - health_check_enabled|bool
+    - not ufw_status_result.stdout is search(health_check_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open consul DNS ports
+  command: ufw allow {{ consul_dns_port }}
+  when:
+    - consul_enabled|bool
+    - not ufw_status_result.stdout is search(consul_dns_port ~ ".*ALLOW IN.*Anywhere")
+
+- name: open consul HTTP API port
+  command: ufw allow {{ consul_api_port }}/tcp
+  when:
+    - consul_enabled|bool
+    - not ufw_status_result.stdout is search(consul_api_port ~ "/tcp.*ALLOW IN.*Anywhere")
+
+- name: open consul LAN serf ports
+  command: ufw allow {{ consul_serf_lan_port }}
+  when:
+    - consul_enabled|bool
+    - not ufw_status_result.stdout is search(consul_serf_lan_port ~ ".*ALLOW IN.*Anywhere")
+
+- name: open consul WAN serf ports
+  command: ufw allow {{ consul_serf_wan_port }}
+  when:
+    - consul_enabled|bool
+    - not ufw_status_result.stdout is search(consul_serf_wan_port ~ ".*ALLOW IN.*Anywhere")
+
+- name: enable firewall
+  shell: |
+    set -o pipefail
+    echo "y" | ufw enable
+  args:
+    executable: /bin/bash
+  when: not ufw_status_result.stdout is search("Status.* active")
