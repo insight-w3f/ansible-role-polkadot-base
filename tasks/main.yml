@@ -1,6 +1,9 @@
 ---
 - include_tasks: install-node-exporter.yml
   when: node_exporter_enabled
+- include_role:
+    name: insight_w3f.polkadot_health_check
+  when: health_check_enabled
 - include_tasks: configure-ufw.yml
 - include_tasks: configure-journald.yml
 - include_tasks: configure-users.yml
