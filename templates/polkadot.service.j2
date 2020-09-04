@@ -8,7 +8,8 @@ ExecStart=/usr/local/bin/polkadot \
          --name polkadot-dummy \
          --validator \
          --rpc-methods=Unsafe \
-         --chain={{ chain }}
+         --chain={{ chain }} \
+         --database paritydb
 
 [Install]
 WantedBy=multi-user.target
