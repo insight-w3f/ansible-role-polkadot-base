@@ -9,6 +9,7 @@ ExecStart=/usr/local/bin/polkadot \
          --validator \
          --rpc-methods=Unsafe \
          --chain={{ chain }} \
+         --rpc-port {{ api_rpc_port }} \
          --database paritydb
 
 [Install]
