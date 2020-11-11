@@ -22,15 +22,24 @@
     owner: 'polkadot'
     group: 'polkadot'
 
+- name: check if polkadot binary is present
+  stat:
+    path: /usr/local/bin/polkadot
+  register: polkadot_binary_present
+
+- name: move polkadot binary if not present
+  shell: |
+    cp /usr/local/bin/polkadot-new /usr/local/bin/polkadot
+    chown polkadot:polkadot /usr/local/bin/polkadot
+  when: not polkadot_binary_present.stat.exists
+
 - name: check if polkadot service is running
   shell: |
     set -o pipefail
-    systemctl is-active --quiet polkadot
+    systemctl is-active --quiet {{ chain }}
     if [ "$?" == 0 ]; then
       echo yes
     else
-      cp /usr/local/bin/polkadot-new /usr/local/bin/polkadot
-      chown polkadot:polkadot /usr/local/bin/polkadot
       echo no
     fi
   args:
@@ -41,7 +50,7 @@
 - name: create polkadot dummy config
   template:
     src: polkadot.service.j2
-    dest: /etc/systemd/system/polkadot.service
+    dest: /etc/systemd/system/{{ chain }}.service
     owner: root
     group: root
     mode: 0600
@@ -49,14 +58,14 @@
 
 - name: start polkadot dummy service
   systemd:
-    name: polkadot.service
+    name: "{{ chain }}.service"
     state: started
   changed_when: false
   when: polkadot_service_running.stdout == "no"
 
 - name: save peerId
   uri:
-    url: http://localhost:9933
+    url: http://localhost:{{ api_rpc_port }}
     method: "POST"
     body_format: json
     body: |
@@ -72,7 +81,7 @@
 
 - name: stop polkadot dummy service
   systemd:
-    name: polkadot.service
+    name: "{{ chain }}.service"
     state: stopped
   changed_when: false
   when: polkadot_service_running.stdout == "no"

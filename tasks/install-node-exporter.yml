@@ -41,6 +41,7 @@
   copy:
     src: nginx.conf
     dest: /etc/nginx/nginx.conf
+    mode: 0600
 
 - name: start nginx service
   systemd:

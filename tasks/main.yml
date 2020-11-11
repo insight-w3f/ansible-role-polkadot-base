@@ -1,10 +1,14 @@
 ---
-- include_tasks: install-node-exporter.yml
-  when: node_exporter_enabled
-- include_role:
+- import_role:
     name: insight_w3f.polkadot_health_check
+  vars:
+    phc_api_rpc_port: "{{ api_rpc_port }}"
+    phc_health_check_port: "{{ health_check_port }}"
+    phc_chain: "{{ chain }}"
   when: health_check_enabled
-- include_tasks: configure-ufw.yml
-- include_tasks: configure-journald.yml
-- include_tasks: configure-users.yml
-- include_tasks: configure-polkadot-client.yml
+- import_tasks: install-node-exporter.yml
+  when: node_exporter_enabled
+- import_tasks: configure-ufw.yml
+- import_tasks: configure-journald.yml
+- import_tasks: configure-users.yml
+- import_tasks: configure-polkadot-client.yml
